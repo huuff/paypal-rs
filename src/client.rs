@@ -215,20 +215,25 @@ impl Client {
         E: Endpoint,
     {
         let mut url = self.env.make_url(&endpoint.relative_path());
+        tracing::info!("built url")
 
         if let Some(query) = endpoint.query() {
             let query_string = serde_qs::to_string(&query).expect("serialize the query correctly");
             url.push_str(&query_string);
         }
+        tracing::info!("added query params (if any)");
 
         let mut request = self.client.request(endpoint.method(), url);
         request = self.setup_headers(request, headers).await?;
+        tracing::info!("setup headers");
 
         if let Some(body) = endpoint.body() {
             request = request.json(&body);
         }
+        tracing::info!("added body (if any)");
 
         let res = request.send().await?;
+        tracing::info!("sent request");
 
         if res.status().is_success() {
             // code to debug responses when parse fails.
@@ -238,6 +243,7 @@ impl Client {
             //f.write_all(resp_text.as_bytes()).ok();
             //let response_body: E::Response = serde_json::from_str(&resp_text).unwrap();
             let response_body = res.json::<E::Response>().await?;
+            tracing::info!("decoded response json");
             Ok(response_body)
         } else {
             Err(ResponseError::ApiError(res.json::<PaypalError>().await?))
