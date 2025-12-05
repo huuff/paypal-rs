@@ -215,7 +215,7 @@ impl Client {
         E: Endpoint,
     {
         let mut url = self.env.make_url(&endpoint.relative_path());
-        tracing::info!("built url")
+        tracing::info!("built url");
 
         if let Some(query) = endpoint.query() {
             let query_string = serde_qs::to_string(&query).expect("serialize the query correctly");
